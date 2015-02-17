@@ -1,3 +1,5 @@
+package ricartAgarwala;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,7 +17,7 @@ public class RicartAgarwalaAlgorithm {
             node.id = splitText[0];
             node.ip = splitText[1];
             node.portNumber = Integer.parseInt(splitText[2]);
-            Client client=new Client(node.ip, node.portNumber);
+            Client client=new Client(node.id, node.ip, node.portNumber);
             client.clientThread.start();
         }
 

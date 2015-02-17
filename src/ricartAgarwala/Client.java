@@ -1,11 +1,10 @@
+package ricartAgarwala;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 
 /**
  * Created by priyadarshini on 2/10/15.
@@ -13,9 +12,11 @@ import java.util.ArrayList;
 public class Client implements Runnable {
     Socket sock;
     Thread clientThread;
+    String id;
 
-    Client(String ip, int portNumber) throws  IOException {
+    Client(String id, String ip, int portNumber) throws  IOException {
         sock = new Socket(ip, portNumber);
+        this.id = id;
         clientThread = new Thread(this);
     }
 
@@ -29,14 +30,14 @@ public class Client implements Runnable {
         server.serverThread.start();
 
 //        for (int clientCount = 0; clientCount < 5; clientCount++) {
-//            ArrayList<Client> clients = new ArrayList<Client>();
-//            clients.add(new Client("127.0.0.1", 4000));
+//            ArrayList<ricartAgarwala.Client> clients = new ArrayList<ricartAgarwala.Client>();
+//            clients.add(new ricartAgarwala.Client("127.0.0.1", 4000));
 //            System.out.println("client number"+ clientCount);
 //            clients.get(0).clientThread = new Thread(clients.get(0));
 //            clients.get(0).clientThread.start();
 //        }
-//        ArrayList<Client> clients = new ArrayList<Client>();
-//        clients.add(new Client("127.0.0.1", 4000));
+//        ArrayList<ricartAgarwala.Client> clients = new ArrayList<ricartAgarwala.Client>();
+//        clients.add(new ricartAgarwala.Client("127.0.0.1", 4000));
 //        clients.get(0).clientThread = new Thread(clients.get(0));
 //        clients.get(0).clientThread.start();
         // TODO code application logic here
@@ -51,7 +52,7 @@ public class Client implements Runnable {
                 /*InputStreamReader isr=new InputStreamReader(System.in);
                 BufferedReader br=new BufferedReader(isr);
                 requ=br.readLine();*/
-                req.write("hello".getBytes());
+                req.write(("hello " + id).getBytes());
                 System.out.println("client printing done");
                 Thread.sleep(5000);
 
