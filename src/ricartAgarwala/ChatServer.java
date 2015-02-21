@@ -12,11 +12,14 @@ import java.util.Vector;
  */
 public class ChatServer {
     static Vector ClientSockets;
+    Node node;
 
-    ChatServer() throws Exception
+    ChatServer(Node node) throws Exception
     {
         ServerSocket soc=new ServerSocket(4040);
         ClientSockets=new Vector();
+
+        this.node = node;
 
         while(true)
         {
@@ -27,7 +30,6 @@ public class ChatServer {
     public static void main(String args[]) throws Exception
     {
 
-        ChatServer ob=new ChatServer();
     }
 
     class AcceptClient extends Thread
@@ -41,7 +43,7 @@ public class ChatServer {
                 ClientSocket = CSoc;
 
                 din = new DataInputStream(ClientSocket.getInputStream());
-                dout = new DataOutputStream(ClientSocket.getOutputStream());
+//                dout = new DataOutputStream(ClientSocket.getOutputStream());
 
 //                String LoginName = din.readUTF();
                 System.out.println("start");
@@ -55,18 +57,20 @@ public class ChatServer {
 
         public void run()
         {
-            System.out.println("thread started");
             while(true)
             {
-                System.out.println("while started");
-
                 try
                 {
-                    System.out.println("msg read started");
                     byte buf[] = new byte[50];
                     din.read(buf);
                     String msgFromClient=new String(buf);
                     System.out.println("msgfrmclient"+msgFromClient);
+//                    byte writeMsg[] = new byte[200];
+//                    writeMsg= "Message received".getBytes();
+//                    dout.write(writeMsg);
+//                    Thread.sleep(1000);
+//                    dout.write("Second msg received".getBytes());
+//                    System.out.println("msg written");
 //                    StringTokenizer st=new StringTokenizer(msgFromClient);
 //                    String Sendto=st.nextToken();
 //                    String MsgType=st.nextToken();

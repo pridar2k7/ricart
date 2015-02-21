@@ -1,10 +1,12 @@
 package ricartAgarwala;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Vector;
 
 /**
  * Created by priyadarshini on 2/10/15.
@@ -12,12 +14,17 @@ import java.net.Socket;
 public class Client implements Runnable {
     Socket sock;
     Thread clientThread;
-    String id;
+    Node node;
+    OutputStream req;
+    InputStream ins;
 
-    Client(String id, String ip, int portNumber) throws  IOException {
-        sock = new Socket(ip, portNumber);
-        this.id = id;
+    Client(Node node) throws  IOException {
+        this.node= node;
+        sock = new Socket(node.ip, node.portNumber);
         clientThread = new Thread(this);
+        req = sock.getOutputStream();
+        ins = sock.getInputStream();
+
     }
 
     /**
@@ -25,9 +32,6 @@ public class Client implements Runnable {
      */
     public static void main(String[] args) throws IOException {
 
-        Server server = new Server();
-        server.serverThread = new Thread(server);
-        server.serverThread.start();
 
 //        for (int clientCount = 0; clientCount < 5; clientCount++) {
 //            ArrayList<ricartAgarwala.Client> clients = new ArrayList<ricartAgarwala.Client>();
@@ -44,58 +48,49 @@ public class Client implements Runnable {
     }
 
     public void run() {
+
         while (true) {
-            try {
-                OutputStream req = sock.getOutputStream();
-                //req.write("hello server".getBytes());
-                String requ = new String();
-                /*InputStreamReader isr=new InputStreamReader(System.in);
-                BufferedReader br=new BufferedReader(isr);
-                requ=br.readLine();*/
-                req.write(("hello " + id).getBytes());
-                System.out.println("client printing done");
-                Thread.sleep(5000);
-
-            } catch (Exception e) {
-                System.out.println("The error is in client.. " + e);
-            }
         }
     }
+
+
+
 
 }
 
-class Server implements Runnable {
-    ServerSocket server;
-    Thread serverThread;
-
-    Server() throws IOException {
-        server = new ServerSocket(4040);
-    }
-
-    public void run() {
-        try {
-            while (true) {
-                Socket s = server.accept();
-
-                System.out.println("entering server");
-                System.out.println(s);
-
-
-                InputStream in = s.getInputStream();
-                byte buf[] = new byte[50];
-                in.read(buf);
-                String request = new String(buf);
-                System.out.println("server msg: " + request);
-                //String reqarr[]=new String[2];
-                //reqarr=request1.split("-");
-                //System.out.println(reqarr[0]);
-                //String request=reqarr[1];
-
-            }
-        }
-        catch(Exception e){
-            System.out.println(e.getMessage());
-        }
-    }
-}
-
+//class Server implements Runnable {
+//    ServerSocket server;
+//    Thread serverThread;
+//    Node node;
+//
+//    Server() throws IOException {
+//        server = new ServerSocket(4040);
+//    }
+//
+//    public void run() {
+//        try {
+//            while (true) {
+//                Socket s = server.accept();
+//
+//                System.out.println("entering server");
+//                System.out.println(s);
+//
+//
+//                InputStream in = s.getInputStream();
+//                byte buf[] = new byte[50];
+//                in.read(buf);
+//                String request = new String(buf);
+//                System.out.println("server msg: " + request);
+//                //String reqarr[]=new String[2];
+//                //reqarr=request1.split("-");
+//                //System.out.println(reqarr[0]);
+//                //String request=reqarr[1];
+//
+//            }
+//        }
+//        catch(Exception e){
+//            System.out.println(e.getMessage());
+//        }
+//    }
+//}
+//
