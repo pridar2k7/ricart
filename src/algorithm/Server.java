@@ -14,6 +14,9 @@ import java.util.*;
 public class Server extends Thread {
 
     public static final int TOTAL_PEERS = 3;
+    public static final int TIME_UNIT = 100;
+    private final double unitDiff;
+    private final boolean isNodeOdd;
     protected Map connectedSockets;
     int clientId;
     Node thisNode;
@@ -38,6 +41,13 @@ public class Server extends Thread {
         criticalSectionRequested = false;
         highestSeqNum = 0;
         replyDeferredTo = new boolean[TOTAL_PEERS];
+        if(thisNode.id %2 == 0){
+            unitDiff = 0.5;
+            isNodeOdd = false;
+        }else{
+            unitDiff = 0.25;
+            isNodeOdd = true;
+        }
         start();
     }
 
@@ -57,16 +67,14 @@ public class Server extends Thread {
             allClients.add(client);
         }
 
-        /*this node number 4.. there should have been 3 client sockets and 6 server sockets*/
+        /*if this is node number 4.. there should have been 3 client sockets and 6 server sockets*/
 
-//        for (int count = 0; count < allClients.size(); count++) {
         while (connectedSockets.size() != (TOTAL_PEERS - 1)) {
             System.out.println("connected sockets " + connectedSockets.size());
-            Thread.sleep(25000);
+            Thread.sleep(2 * TIME_UNIT);
         }
 
         requestCriticalSection();
-//        }
     }
 
     private void requestCriticalSection() {
@@ -176,7 +184,7 @@ public class Server extends Thread {
         try {
             entryCount++;
             System.out.println("Entered Critical section.. ");
-            Thread.sleep(300);
+            Thread.sleep(3 * TIME_UNIT);
             System.out.println("Exited critical section..");
             replySet.clear();
         } catch (Exception e) {
@@ -191,10 +199,7 @@ public class Server extends Thread {
         for (int i = 0; i < TOTAL_PEERS; i++) {
             if (replyDeferredTo[i]) {
                 replyDeferredTo[i] = false;
-//                if(i < (thisNode.id - 1))
                 sendReply(i + 1);
-//                else
-//                    sendReply(i + 2);
             }
         }
         makeRequest();
@@ -203,19 +208,23 @@ public class Server extends Thread {
     private void makeRequest() {
         try {
             System.out.println("EntryCount " + entryCount);
+            int timeToSleep = 0;
             if (entryCount <= 20) {
-                Thread.sleep(2000);
+                timeToSleep = (int)((10+ (entryCount*unitDiff)) * TIME_UNIT);
+                Thread.sleep(timeToSleep);
                 requestCriticalSection();
-            }
-            if (entryCount <= 40) {
-                if ((entryCount % 2) == 0) {
-                    Thread.sleep(2000);
+            } else if (entryCount <= 40) {
+                if (isNodeOdd) {
+                    timeToSleep = (int)((10 + (entryCount*unitDiff)) * TIME_UNIT);
+                    Thread.sleep(timeToSleep);
                     requestCriticalSection();
                 } else {
-                    Thread.sleep(4000);
+                    timeToSleep = (int)((40+ ((entryCount%20)*unitDiff)) * TIME_UNIT) ;
+                    Thread.sleep(timeToSleep);
                     requestCriticalSection();
                 }
             }
+            System.out.println("timeToSleeep " + timeToSleep);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -247,10 +256,9 @@ public class Server extends Thread {
 //                    reader.read(buf);
                     String msgFromClient;
 //                    for (int iterator = 0; iterator < splitMsg.length; iterator++) {
-                    while(( msgFromClient = reader.readLine() ) != null)
-                    {
-                            System.out.println("msgfrmclient" + msgFromClient);
-                            receiveMessage(msgFromClient.trim());
+                    while ((msgFromClient = reader.readLine()) != null) {
+                        System.out.println("msgfrmclient" + msgFromClient);
+                        receiveMessage(msgFromClient.trim());
                     }
 //                    }
                 } catch (Exception ex) {
@@ -281,7 +289,7 @@ public class Server extends Thread {
 //                    reader.read(buf);
                     String msgFromClient;
 //                    for (int iterator = 0; iterator < splitMsg.length; iterator++) {
-                    while(( msgFromClient = reader.readLine() ) != null)
+                    while ((msgFromClient = reader.readLine()) != null)
 
                     {
                         System.out.println("msgfrmclient" + msgFromClient);

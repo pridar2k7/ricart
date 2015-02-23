@@ -11,7 +11,6 @@ import java.util.Vector;
  * Created by priyadarshini on 2/16/15.
  */
 public class RicartAgarwalaAlgorithm {
-    Vector allClients;
 
 
     public static void main(String[] args) throws Exception {

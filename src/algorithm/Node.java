@@ -15,11 +15,4 @@ public class Node {
     String ip;
     int portNumber;
     int seqNumber;
-    InputStream receiver;
-    OutputStream sender;
-
-
-
-
-
 }
