@@ -28,6 +28,8 @@ public class Server extends Thread {
     private boolean criticalSectionRequested;
     Set replySet;
     PrintWriter sender;
+    private Set participants;
+    private boolean inCriticalSection;
 
 
     Server(Node thisNode) throws Exception {
@@ -36,8 +38,10 @@ public class Server extends Thread {
         connectedSockets = new HashMap();
         clientId = thisNode.id + 1;
         entryCount = 0;
+        inCriticalSection = false;
 
         replySet = new HashSet();
+        participants = new HashSet();
         criticalSectionRequested = false;
         highestSeqNum = 0;
         replyDeferredTo = new boolean[TOTAL_PEERS];
@@ -49,6 +53,7 @@ public class Server extends Thread {
             isNodeOdd = true;
         }
         start();
+        System.out.println("start "+currentThread().toString());
     }
 
     protected void algorithm() throws IOException, InterruptedException {
@@ -144,19 +149,22 @@ public class Server extends Thread {
                     .toString();
             System.out.println(replyMessage);
             sender.println(replyMessage);
+            System.out.println("Participants before add "+ participants.toString() + currentThread().toString());
+            participants.add(channelCount);
+            System.out.println("Participants after add"+ participants.toString() + currentThread().toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    protected void receiveMessage(String receivedMessage) throws IOException {
+    protected void receiveMessage(String receivedMessage) throws IOException, InterruptedException {
         String[] keyWords = receivedMessage.split(" ");
         if (keyWords[0].equals("REQUEST")) {
             System.out.println("Request received from node " + keyWords[2] + " with sequence number- " + keyWords[1]);
             receiveRequest(Integer.parseInt(keyWords[2]), Integer.parseInt(keyWords[1]));
         } else if (keyWords[0].equals("REPLY")) {
             System.out.println("Reply received from node " + keyWords[2].trim() + " with sequence number- " + keyWords[1]);
-            receiveReply(keyWords[2]);
+            receiveReply(Integer.parseInt(keyWords[2]), Integer.parseInt(keyWords[1]));
         }
     }
 
@@ -172,20 +180,31 @@ public class Server extends Thread {
         }
     }
 
-    private void receiveReply(String fromNode) {
+    private void receiveReply(int fromNode, int fromSeqNumber) throws InterruptedException {
+        highestSeqNum = Math.max(highestSeqNum, fromSeqNumber);
+        System.out.println("replyset before add "+ replySet.toString() + "from node" + fromNode );
         replySet.add(fromNode);
+        System.out.println("replyset after add "+ replySet.toString() );
+        if(inCriticalSection){
+            Thread.sleep(500);
+        }
         if (replySet.size() == (TOTAL_PEERS - 1)) {
             enterCriticalSection();
             releaseCriticalSection();
+            replySet.clear();
         }
+        System.out.println("Participants before remove "+ participants.toString() + currentThread().toString());
+        participants.remove(fromNode);
+        System.out.println("Participants after remove " + participants.toString() + currentThread().toString());
     }
 
     private void enterCriticalSection() {
         try {
+            inCriticalSection = true;
             entryCount++;
-            System.out.println("Entered Critical section.. ");
+            System.out.println("Entered Critical section.. " + currentThread().toString());
             Thread.sleep(3 * TIME_UNIT);
-            System.out.println("Exited critical section..");
+            System.out.println("Exited critical section.." + currentThread().toString());
             replySet.clear();
         } catch (Exception e) {
             System.out.println("Something went wrong in the critical section");
@@ -202,6 +221,7 @@ public class Server extends Thread {
                 sendReply(i + 1);
             }
         }
+        inCriticalSection = false;
         makeRequest();
     }
 
